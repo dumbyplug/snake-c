@@ -48,7 +48,7 @@ char move(SDL_Rect *rect, SDL_Rect *apple,
 		}
 	}
 
-	if(((apple->x - 10) == x) && ((apple->y - 10) == y)){
+	if((((apple)->x - 10) == x) && (((apple)->y - 10) == y)){
 		rect[*size].x = x;
 		rect[*size].y = y;
 		rect[*size].w = 40;
@@ -78,8 +78,10 @@ char move(SDL_Rect *rect, SDL_Rect *apple,
 		}
 		int random_number = rand() % (400 - *size) + *size;
 
-		apple->x = 10 + (empty_places[random_number] % 100) * 40; 
-		apple->y = 10 + (empty_places[random_number] / 100) * 40; 
+		(apple)->x = 10 + (empty_places[random_number] % 100) * 40; 
+		(apple)->y = 10 + (empty_places[random_number] / 100) * 40; 
+		(apple + 1)->x = 16 + (empty_places[random_number] % 100) * 40; 
+		(apple + 1)->y = 6 + (empty_places[random_number] / 100) * 40; 
 		return 0;
 	}
 
@@ -148,7 +150,7 @@ int main(void){
 	int size = 8, speed = 40;
 	SDL_Rect rect[400];
 	SDL_Rect eyes[2];
-	SDL_Rect apple;
+	SDL_Rect apple[2];
 	int snake_facing = 0; // 0 - right, 1 - up, 2 - left, 3 - down 
 
 	SDL_Init(SDL_INIT_VIDEO);
@@ -160,8 +162,12 @@ int main(void){
 	eyes[0].w = 5; eyes[0].h = 5;
 	eyes[1].w = 5; eyes[1].h = 5;
 
-	apple.w = 20; apple.h = 20;
-	apple.x = 10 + 120; apple.y = 10 + 120;
+	apple[0].w = 20; apple[0].h = 20;
+	apple[0].x = 10 + 120; apple[0].y = 10 + 120;
+
+	apple[1].w = 8; apple[1].h = 8;
+	apple[1].x = 16 + 120; apple[1].y = 6 + 120;
+
 
 	char run = 1;
 	char moved = 0;
@@ -206,14 +212,16 @@ int main(void){
 		SDL_RenderClear(renderer);
 
 		if(moveDelay > 18){
-			moveError = move(rect, &apple, &size, speed, snake_facing);
+			moveError = move(rect, apple, &size, speed, snake_facing);
 			moveDelay = 1;
 			moved = 0;
 		}
 		draw_snake(renderer, rect, eyes, size, snake_facing);
 		
 		SDL_SetRenderDrawColor(renderer, 200, 54, 23, 255);
-		SDL_RenderFillRect(renderer, &apple);
+		SDL_RenderFillRect(renderer, (apple));
+		SDL_SetRenderDrawColor(renderer, 20, 200, 23, 255);
+		SDL_RenderFillRect(renderer, (apple + 1));
 		
 
 		SDL_RenderPresent(renderer);
