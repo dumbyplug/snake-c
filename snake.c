@@ -163,7 +163,8 @@ int main(void){
 	apple.w = 20; apple.h = 20;
 	apple.x = 10 + 120; apple.y = 10 + 120;
 
-	int run = 1;
+	char run = 1;
+	char moved = 0;
 	int moveDelay = 0;
 	char moveError = 0;
 	while(run){
@@ -175,20 +176,28 @@ int main(void){
 			switch(event.key.keysym.sym){
 			
 			case SDLK_RIGHT:
-				if(snake_facing != 2)
+				if((snake_facing != 2) && !moved){
 					snake_facing = 0;
+					moved = 1;
+				}
 				break;
 			case SDLK_LEFT:
-				if(snake_facing != 0)
+				if((snake_facing != 0) && !moved){
 					snake_facing = 2;
+					moved = 1;
+				}
 				break;
 			case SDLK_UP:
-				if(snake_facing != 3)
+				if((snake_facing != 3) && !moved){
 					snake_facing = 1;
+					moved = 1;
+				}
 				break;
 			case SDLK_DOWN:
-				if(snake_facing != 1)
+				if((snake_facing != 1) && !moved){
 					snake_facing = 3;
+					moved = 1;
+				}
 				break;
 			}
 			}
@@ -199,6 +208,7 @@ int main(void){
 		if(moveDelay > 18){
 			moveError = move(rect, &apple, &size, speed, snake_facing);
 			moveDelay = 1;
+			moved = 0;
 		}
 		draw_snake(renderer, rect, eyes, size, snake_facing);
 		
@@ -208,6 +218,7 @@ int main(void){
 
 		SDL_RenderPresent(renderer);
 		SDL_Delay(10);
+
 		if(moveError)
 			break;
 		moveDelay++;
