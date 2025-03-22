@@ -49,12 +49,16 @@ char move(SDL_Rect *rect, SDL_Rect *apple,
 		}
 	}
 
+	// if the snake eats apple, do not delete the tail. after that create 
+	// another apple on a random location which is not not on snake
 	if((((apple)->x - 10) == x) && (((apple)->y - 10) == y)){
 		rect[*size].x = x;
 		rect[*size].y = y;
 		rect[*size].w = 40;
 		rect[*size].h = 40;
 		*size += 1;
+		if(size >= 400)
+			return 0;
 
 		int empty_places[400];
 		for(i = 0; i < 400; i++){
@@ -102,51 +106,50 @@ void snake_init(SDL_Rect *rect, int size){
 	}
 }
 
-void draw_snake(SDL_Renderer *renderer,SDL_Rect *rect, 
-		SDL_Rect *eyes, int size, int snake_facing){
+void draw_snake(SDL_Renderer *renderer,SDL_Rect *rect,
+	// this function draws the snake with its eyes
+	SDL_Rect *eyes, int size, int snake_facing){
 
-		SDL_SetRenderDrawColor(renderer, 50, 170, 35, 255);
+	SDL_SetRenderDrawColor(renderer, 70, 65, 210, 255);
 
-		int index;
-		for(index = 0; index < size; index++){
-			SDL_RenderFillRect(renderer, rect + index);
-		}
+	int index;
+	for(index = 0; index < size; index++){
+		SDL_RenderFillRect(renderer, rect + index);
+	}
 
-		if(snake_facing == 0){
-			eyes[0].x = rect[size - 1].x + 30; 
-			eyes[0].y = rect[size - 1].y + 10; 
-			eyes[1].x = rect[size - 1].x + 30; 
-			eyes[1].y = rect[size - 1].y + 25; 
-		}
-		else if(snake_facing == 1){
-			eyes[0].x = rect[size - 1].x + 10; 
-			eyes[0].y = rect[size - 1].y + 5; 
-			eyes[1].x = rect[size - 1].x + 25; 
-			eyes[1].y = rect[size - 1].y + 5; 
-		}
-		else if(snake_facing == 2){
-			eyes[0].x = rect[size - 1].x + 5; 
-			eyes[0].y = rect[size - 1].y + 10; 
-			eyes[1].x = rect[size - 1].x + 5; 
-			eyes[1].y = rect[size - 1].y + 25; 
-		}
-		else if(snake_facing == 3){
-			eyes[0].x = rect[size - 1].x + 10; 
-			eyes[0].y = rect[size - 1].y + 30; 
-			eyes[1].x = rect[size - 1].x + 25; 
-			eyes[1].y = rect[size - 1].y + 30; 
-		}
-		SDL_SetRenderDrawColor(renderer, 233, 15, 23, 255);
-		SDL_RenderFillRect(renderer, &eyes[0]);
-		SDL_RenderFillRect(renderer, &eyes[1]);
-		
+	if(snake_facing == 0){
+		eyes[0].x = rect[size - 1].x + 30; 
+		eyes[0].y = rect[size - 1].y + 10; 
+		eyes[1].x = rect[size - 1].x + 30; 
+		eyes[1].y = rect[size - 1].y + 25; 
+	}
+	else if(snake_facing == 1){
+		eyes[0].x = rect[size - 1].x + 10; 
+		eyes[0].y = rect[size - 1].y + 5; 
+		eyes[1].x = rect[size - 1].x + 25; 
+		eyes[1].y = rect[size - 1].y + 5; 
+	}
+	else if(snake_facing == 2){
+		eyes[0].x = rect[size - 1].x + 5; 
+		eyes[0].y = rect[size - 1].y + 10; 
+		eyes[1].x = rect[size - 1].x + 5; 
+		eyes[1].y = rect[size - 1].y + 25; 
+	}
+	else if(snake_facing == 3){
+		eyes[0].x = rect[size - 1].x + 10; 
+		eyes[0].y = rect[size - 1].y + 30; 
+		eyes[1].x = rect[size - 1].x + 25; 
+		eyes[1].y = rect[size - 1].y + 30; 
+	}
+	SDL_SetRenderDrawColor(renderer, 233, 15, 23, 255);
+	SDL_RenderFillRect(renderer, &eyes[0]);
+	SDL_RenderFillRect(renderer, &eyes[1]);
+	
 }
 
 
 char game(SDL_Window *window, SDL_Renderer *renderer){	
-
 	SDL_Event event;
-
 	int size = 3, speed = 40, initialSize = size;
 	SDL_Rect rect[400];
 	SDL_Rect eyes[2];
@@ -159,11 +162,13 @@ char game(SDL_Window *window, SDL_Renderer *renderer){
 	eyes[0].w = 5; eyes[0].h = 5;
 	eyes[1].w = 5; eyes[1].h = 5;
 
+	// initialize the apple
 	apple[0].w = 20; apple[0].h = 20;
-	apple[0].x = 10 + 120; apple[0].y = 10 + 120;
+	apple[0].x = 10 + 360; apple[0].y = 10 + 360;
 
+	// initialize the leaf of apple
 	apple[1].w = 8; apple[1].h = 8;
-	apple[1].x = 16 + 120; apple[1].y = 6 + 120;
+	apple[1].x = 16 + 360; apple[1].y = 6 + 360;
 
 
 	char run = 1;
@@ -202,10 +207,34 @@ char game(SDL_Window *window, SDL_Renderer *renderer){
 					moved = 1;
 				}
 				break;
+			case SDLK_RIGHT:
+				if((snake_facing != 2) && !moved){
+					snake_facing = 0;
+					moved = 1;
+				}
+				break;
+			case SDLK_LEFT:
+				if((snake_facing != 0) && !moved){
+					snake_facing = 2;
+					moved = 1;
+				}
+				break;
+			case SDLK_UP:
+				if((snake_facing != 3) && !moved){
+					snake_facing = 1;
+					moved = 1;
+				}
+				break;
+			case SDLK_DOWN:
+				if((snake_facing != 1) && !moved){
+					snake_facing = 3;
+					moved = 1;
+				}
+				break;
 			}
 			}
 		}
-		SDL_SetRenderDrawColor(renderer, 50, 69, 46, 255);
+		SDL_SetRenderDrawColor(renderer, 140, 199, 169, 255); // background
 		SDL_RenderClear(renderer);
 
 		if(moveDelay > 15){
@@ -213,6 +242,7 @@ char game(SDL_Window *window, SDL_Renderer *renderer){
 			moveDelay = 1;
 			moved = 0;
 		}
+
 		draw_snake(renderer, rect, eyes, size, snake_facing);
 		
 		SDL_SetRenderDrawColor(renderer, 200, 54, 23, 255);
@@ -233,6 +263,10 @@ char game(SDL_Window *window, SDL_Renderer *renderer){
 }
 
 int deathscreen(SDL_Window *window, SDL_Renderer *renderer, int score){
+	/* This function handles the death. It shows the score. After pressing 
+	 * space it restarts the game
+	*/
+
 	TTF_Font *font = TTF_OpenFont("homevideo.ttf", 48);
 	TTF_Font *titlefont = TTF_OpenFont("homevideo-bold.ttf", 128);
 	SDL_Color color = {255, 255, 255, 255};
@@ -253,7 +287,7 @@ int deathscreen(SDL_Window *window, SDL_Renderer *renderer, int score){
 	SDL_Rect scorerect = {WINDOW_WIDTH/2 - scoreSurface->w / 2, 
 	WINDOW_HEIGHT/2 - scoreSurface->h / 2, scoreSurface->w, scoreSurface->h};
 
-	
+	// assisting text.
 	SDL_Surface *spaceSurface = TTF_RenderText_Solid(font, "Press <Space> to play again", color);
 	SDL_Texture *spaceTexture = SDL_CreateTextureFromSurface(renderer, spaceSurface);
 
@@ -287,13 +321,19 @@ int deathscreen(SDL_Window *window, SDL_Renderer *renderer, int score){
 
 int main(void){
 	srand(time(NULL));
-	SDL_Window* window = NULL;
-	SDL_Renderer* renderer = NULL;
 
 	TTF_Init();
 	SDL_Init(SDL_INIT_VIDEO);
-	SDL_CreateWindowAndRenderer(WINDOW_WIDTH, 
-			WINDOW_HEIGHT, 0, &window, &renderer);
+
+	SDL_Window* window = SDL_CreateWindow(
+			"Snake Game",
+			SDL_WINDOWPOS_CENTERED,
+			SDL_WINDOWPOS_CENTERED,
+			WINDOW_WIDTH,
+			WINDOW_HEIGHT,
+			0);
+	SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+
 
 	int score;
 	while(1){
