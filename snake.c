@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
@@ -96,7 +97,7 @@ char move(SDL_Rect *rect, SDL_Rect *apple,
 void snake_init(SDL_Rect *rect, int size){
 	// placing its body parts next to each other
 	for(int i = 0; i < size; i++){
-		rect[i].x = 0 + 40 * i;  rect[i].y = 360;
+		rect[i].x = 80 + 40 * i;  rect[i].y = 360;
 		rect[i].w = 40;          rect[i].h = 40;
 	}
 }
@@ -104,7 +105,7 @@ void snake_init(SDL_Rect *rect, int size){
 void draw_snake(SDL_Renderer *renderer,SDL_Rect *rect, 
 		SDL_Rect *eyes, int size, int snake_facing){
 
-		SDL_SetRenderDrawColor(renderer, 8, 15, 23, 255);
+		SDL_SetRenderDrawColor(renderer, 50, 170, 35, 255);
 
 		int index;
 		for(index = 0; index < size; index++){
@@ -141,21 +142,17 @@ void draw_snake(SDL_Renderer *renderer,SDL_Rect *rect,
 		
 }
 
-int main(void){
-	srand(time(NULL));
-	SDL_Window* window = NULL;
-	SDL_Renderer* renderer = NULL;
+
+char game(SDL_Window *window, SDL_Renderer *renderer){	
+
 	SDL_Event event;
 
-	int size = 8, speed = 40;
+	int size = 3, speed = 40, initialSize = size;
 	SDL_Rect rect[400];
 	SDL_Rect eyes[2];
 	SDL_Rect apple[2];
 	int snake_facing = 0; // 0 - right, 1 - up, 2 - left, 3 - down 
 
-	SDL_Init(SDL_INIT_VIDEO);
-	SDL_CreateWindowAndRenderer(WINDOW_WIDTH, 
-			WINDOW_HEIGHT, 0, &window, &renderer);
 
 	snake_init(rect, size);
 
@@ -176,30 +173,30 @@ int main(void){
 	while(run){
 		while(SDL_PollEvent(&event)){
 			if(event.type == SDL_QUIT)
-				run = 0;
+				return -1;
 			else if(event.type == SDL_KEYDOWN){
 				
 			switch(event.key.keysym.sym){
 			
-			case SDLK_RIGHT:
+			case SDLK_d:
 				if((snake_facing != 2) && !moved){
 					snake_facing = 0;
 					moved = 1;
 				}
 				break;
-			case SDLK_LEFT:
+			case SDLK_a:
 				if((snake_facing != 0) && !moved){
 					snake_facing = 2;
 					moved = 1;
 				}
 				break;
-			case SDLK_UP:
+			case SDLK_w:
 				if((snake_facing != 3) && !moved){
 					snake_facing = 1;
 					moved = 1;
 				}
 				break;
-			case SDLK_DOWN:
+			case SDLK_s:
 				if((snake_facing != 1) && !moved){
 					snake_facing = 3;
 					moved = 1;
@@ -208,10 +205,10 @@ int main(void){
 			}
 			}
 		}
-		SDL_SetRenderDrawColor(renderer, 150, 213, 205, 255);
+		SDL_SetRenderDrawColor(renderer, 50, 69, 46, 255);
 		SDL_RenderClear(renderer);
 
-		if(moveDelay > 18){
+		if(moveDelay > 15){
 			moveError = move(rect, apple, &size, speed, snake_facing);
 			moveDelay = 1;
 			moved = 0;
@@ -228,9 +225,82 @@ int main(void){
 		SDL_Delay(10);
 
 		if(moveError)
-			break;
+			run = 0;
 		moveDelay++;
 	}
 	
+	return size - initialSize;
+}
+
+int deathscreen(SDL_Window *window, SDL_Renderer *renderer, int score){
+	TTF_Font *font = TTF_OpenFont("homevideo.ttf", 48);
+	TTF_Font *titlefont = TTF_OpenFont("homevideo-bold.ttf", 128);
+	SDL_Color color = {255, 255, 255, 255};
+	char buffer[128];
+	sprintf(buffer, "Your score is %d", score);
+
+	// game name
+	SDL_Surface *nameSurface = TTF_RenderText_Solid(titlefont, "Snake", color);
+	SDL_Texture *nameTexture = SDL_CreateTextureFromSurface(renderer, nameSurface);
+
+	SDL_Rect namerect = {WINDOW_WIDTH/2 - nameSurface->w / 2, 
+		nameSurface->h * 2 , nameSurface->w, nameSurface->h};
+	
+	// score
+	SDL_Surface *scoreSurface = TTF_RenderText_Solid(font, buffer, color);
+	SDL_Texture *scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+
+	SDL_Rect scorerect = {WINDOW_WIDTH/2 - scoreSurface->w / 2, 
+	WINDOW_HEIGHT/2 - scoreSurface->h / 2, scoreSurface->w, scoreSurface->h};
+
+	
+	SDL_Surface *spaceSurface = TTF_RenderText_Solid(font, "Press <Space> to play again", color);
+	SDL_Texture *spaceTexture = SDL_CreateTextureFromSurface(renderer, spaceSurface);
+
+	SDL_Rect spacerect = {WINDOW_WIDTH/2 - spaceSurface->w / 2, 
+		WINDOW_HEIGHT/2 + spaceSurface->h * 4, spaceSurface->w, spaceSurface->h};
+
+
+	char run = 1;
+	SDL_Event event;
+	while(run){
+		while(SDL_PollEvent(&event)){
+			if(event.type == SDL_QUIT){
+				return 1;
+			}
+			if(event.type == SDL_KEYDOWN){
+				if(event.key.keysym.sym == SDLK_SPACE){
+					run = 0;
+				}
+			}
+		}
+		SDL_SetRenderDrawColor(renderer, 45, 56, 75, 255);
+		SDL_RenderClear(renderer);
+
+		SDL_RenderCopy(renderer, nameTexture, NULL, &namerect);
+		SDL_RenderCopy(renderer, scoreTexture, NULL, &scorerect);
+		SDL_RenderCopy(renderer, spaceTexture, NULL, &spacerect);
+		SDL_RenderPresent(renderer);
+	}
 	return 0;
+}
+
+int main(void){
+	srand(time(NULL));
+	SDL_Window* window = NULL;
+	SDL_Renderer* renderer = NULL;
+
+	TTF_Init();
+	SDL_Init(SDL_INIT_VIDEO);
+	SDL_CreateWindowAndRenderer(WINDOW_WIDTH, 
+			WINDOW_HEIGHT, 0, &window, &renderer);
+
+	int score;
+	while(1){
+		score = game(window, renderer);
+		if(score == -1)
+			break;
+		if(deathscreen(window, renderer, score))
+			break;
+	}
 }
