@@ -7,13 +7,7 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 800
 
-/*else if(event.type == SDL_MOUSEMOTION){
-	SDL_GetMouseState(&rect.x, &rect.y);
-	rect.x -= rect.w / 2;
-	rect.y -= rect.h / 2;
-}*/
-char move(SDL_Rect *rect, SDL_Rect *apple, 
-		int *size, int speed, int snake_facing){
+char move(SDL_Rect *rect, SDL_Rect *apple, int *size, int speed, int snake_facing){
 	// This function move the snake to the desired location if it is possible
 	int i, x, y;
 
@@ -57,9 +51,10 @@ char move(SDL_Rect *rect, SDL_Rect *apple,
 		rect[*size].w = 40;
 		rect[*size].h = 40;
 		*size += 1;
-		if(size >= 400)
-			return 0;
+		if(*size >= 400)
+			return 0; // no need to spawn an apple
 
+		// getting empty places.
 		int empty_places[400];
 		for(i = 0; i < 400; i++){
 			empty_places[i] = (i / 20) * 100 + i % 20; 
@@ -81,6 +76,8 @@ char move(SDL_Rect *rect, SDL_Rect *apple,
 			if(!swapped)
 				break;
 		}
+
+		// spawning snake on random location
 		int random_number = rand() % (400 - *size) + *size;
 
 		(apple)->x = 10 + (empty_places[random_number] % 100) * 40; 
@@ -98,19 +95,12 @@ char move(SDL_Rect *rect, SDL_Rect *apple,
 	return 0;
 }
 
-void snake_init(SDL_Rect *rect, int size){
-	// placing its body parts next to each other
-	for(int i = 0; i < size; i++){
-		rect[i].x = 80 + 40 * i;  rect[i].y = 360;
-		rect[i].w = 40;          rect[i].h = 40;
-	}
-}
 
 void draw_snake(SDL_Renderer *renderer,SDL_Rect *rect,
 	// this function draws the snake with its eyes
 	SDL_Rect *eyes, int size, int snake_facing){
 
-	SDL_SetRenderDrawColor(renderer, 70, 65, 210, 255);
+	SDL_SetRenderDrawColor(renderer, 10, 120, 10, 255);
 
 	int index;
 	for(index = 0; index < size; index++){
@@ -141,7 +131,7 @@ void draw_snake(SDL_Renderer *renderer,SDL_Rect *rect,
 		eyes[1].x = rect[size - 1].x + 25; 
 		eyes[1].y = rect[size - 1].y + 30; 
 	}
-	SDL_SetRenderDrawColor(renderer, 233, 15, 23, 255);
+	SDL_SetRenderDrawColor(renderer, 255, 112, 123, 255);
 	SDL_RenderFillRect(renderer, &eyes[0]);
 	SDL_RenderFillRect(renderer, &eyes[1]);
 	
@@ -157,8 +147,11 @@ char game(SDL_Window *window, SDL_Renderer *renderer){
 	int snake_facing = 0; // 0 - right, 1 - up, 2 - left, 3 - down 
 
 
-	snake_init(rect, size);
-
+	// initializing snake
+	for(int i = 0; i < size; i++){
+		rect[i].x = 80 + 40 * i;  rect[i].y = 360;
+		rect[i].w = 40;          rect[i].h = 40;
+	}
 	eyes[0].w = 5; eyes[0].h = 5;
 	eyes[1].w = 5; eyes[1].h = 5;
 
@@ -181,65 +174,65 @@ char game(SDL_Window *window, SDL_Renderer *renderer){
 				return -1;
 			else if(event.type == SDL_KEYDOWN){
 				
-			switch(event.key.keysym.sym){
-			
-			case SDLK_d:
-				if((snake_facing != 2) && !moved){
-					snake_facing = 0;
-					moved = 1;
+				switch(event.key.keysym.sym){
+				
+				case SDLK_d:
+					if((snake_facing != 2) && !moved){
+						snake_facing = 0;
+						moved = 1;
+					}
+					break;
+				case SDLK_a:
+					if((snake_facing != 0) && !moved){
+						snake_facing = 2;
+						moved = 1;
+					}
+					break;
+				case SDLK_w:
+					if((snake_facing != 3) && !moved){
+						snake_facing = 1;
+						moved = 1;
+					}
+					break;
+				case SDLK_s:
+					if((snake_facing != 1) && !moved){
+						snake_facing = 3;
+						moved = 1;
+					}
+					break;
+				case SDLK_RIGHT:
+					if((snake_facing != 2) && !moved){
+						snake_facing = 0;
+						moved = 1;
+					}
+					break;
+				case SDLK_LEFT:
+					if((snake_facing != 0) && !moved){
+						snake_facing = 2;
+						moved = 1;
+					}
+					break;
+				case SDLK_UP:
+					if((snake_facing != 3) && !moved){
+						snake_facing = 1;
+						moved = 1;
+					}
+					break;
+				case SDLK_DOWN:
+					if((snake_facing != 1) && !moved){
+						snake_facing = 3;
+						moved = 1;
+					}
+					break;
 				}
-				break;
-			case SDLK_a:
-				if((snake_facing != 0) && !moved){
-					snake_facing = 2;
-					moved = 1;
-				}
-				break;
-			case SDLK_w:
-				if((snake_facing != 3) && !moved){
-					snake_facing = 1;
-					moved = 1;
-				}
-				break;
-			case SDLK_s:
-				if((snake_facing != 1) && !moved){
-					snake_facing = 3;
-					moved = 1;
-				}
-				break;
-			case SDLK_RIGHT:
-				if((snake_facing != 2) && !moved){
-					snake_facing = 0;
-					moved = 1;
-				}
-				break;
-			case SDLK_LEFT:
-				if((snake_facing != 0) && !moved){
-					snake_facing = 2;
-					moved = 1;
-				}
-				break;
-			case SDLK_UP:
-				if((snake_facing != 3) && !moved){
-					snake_facing = 1;
-					moved = 1;
-				}
-				break;
-			case SDLK_DOWN:
-				if((snake_facing != 1) && !moved){
-					snake_facing = 3;
-					moved = 1;
-				}
-				break;
-			}
 			}
 		}
-		SDL_SetRenderDrawColor(renderer, 140, 199, 169, 255); // background
+		SDL_SetRenderDrawColor(renderer, 150, 149, 235, 255); // background
 		SDL_RenderClear(renderer);
 
 		if(moveDelay > 15){
 			moveError = move(rect, apple, &size, speed, snake_facing);
-			moveDelay = 1;
+			moveDelay = 0;
 			moved = 0;
 		}
 
