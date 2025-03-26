@@ -6,27 +6,28 @@
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 800
+#define SPEED 40
 
-char move(SDL_Rect *rect, SDL_Rect *apple, int *size, int speed, int snake_facing){
+char move(SDL_Rect *rect, SDL_Rect *apple, int *size, int snake_facing){
 	// This function move the snake to the desired location if it is possible
 	int i, x, y;
 
 	if(snake_facing == 0){
-		x = rect[*size - 1].x + speed;
+		x = rect[*size - 1].x + SPEED;
 		y = rect[*size - 1].y;
 	}
 	else if(snake_facing == 1){
 		x = rect[*size - 1].x;
-		y = rect[*size - 1].y - speed;
+		y = rect[*size - 1].y - SPEED;
 	}
 	else if(snake_facing == 2){
-		x = rect[*size - 1].x - speed;
+		x = rect[*size - 1].x - SPEED;
 		y = rect[*size - 1].y;
 	}
 
 	else if(snake_facing == 3){
 		x = rect[*size - 1].x;
-		y = rect[*size - 1].y + speed;
+		y = rect[*size - 1].y + SPEED;
 	}
 
 	// checking if the snake would leave the canvas, when the move played 
@@ -96,9 +97,9 @@ char move(SDL_Rect *rect, SDL_Rect *apple, int *size, int speed, int snake_facin
 }
 
 
-void draw_snake(SDL_Renderer *renderer,SDL_Rect *rect,
+void draw_snake(SDL_Renderer *renderer, SDL_Rect *rect,
+				SDL_Rect *eyes, int size, int snake_facing){
 	// this function draws the snake with its eyes
-	SDL_Rect *eyes, int size, int snake_facing){
 
 	SDL_SetRenderDrawColor(renderer, 10, 120, 10, 255);
 
@@ -140,7 +141,7 @@ void draw_snake(SDL_Renderer *renderer,SDL_Rect *rect,
 
 char game(SDL_Window *window, SDL_Renderer *renderer){	
 	SDL_Event event;
-	int size = 3, speed = 40, initialSize = size;
+	int size = 3, initialSize = size;
 	SDL_Rect rect[400];
 	SDL_Rect eyes[2];
 	SDL_Rect apple[2];
@@ -195,6 +196,8 @@ char game(SDL_Window *window, SDL_Renderer *renderer){
 					}
 					break;
 				case SDLK_s:
+
+
 					if((snake_facing != 1) && !moved){
 						snake_facing = 3;
 						moved = 1;
@@ -231,7 +234,7 @@ char game(SDL_Window *window, SDL_Renderer *renderer){
 		SDL_RenderClear(renderer);
 
 		if(moveDelay > 15){
-			moveError = move(rect, apple, &size, speed, snake_facing);
+			moveError = move(rect, apple, &size, snake_facing);
 			moveDelay = 0;
 			moved = 0;
 		}
@@ -266,27 +269,29 @@ int deathscreen(SDL_Window *window, SDL_Renderer *renderer, int score){
 	char buffer[128];
 	sprintf(buffer, "Your score is %d", score);
 
+	SDL_Surface *surface;
+	SDL_Texture *nameTexture;
+	SDL_Texture *scoreTexture;
+	SDL_Texture *spaceTexture;
+
+
 	// game name
-	SDL_Surface *nameSurface = TTF_RenderText_Solid(titlefont, "Snake", color);
-	SDL_Texture *nameTexture = SDL_CreateTextureFromSurface(renderer, nameSurface);
+	surface = TTF_RenderText_Solid(titlefont, "Snake", color);
+	nameTexture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect namerect = {WINDOW_WIDTH/2 - surface->w / 2,
+		surface->h * 2 , surface->w, surface->h};
 
-	SDL_Rect namerect = {WINDOW_WIDTH/2 - nameSurface->w / 2, 
-		nameSurface->h * 2 , nameSurface->w, nameSurface->h};
-	
 	// score
-	SDL_Surface *scoreSurface = TTF_RenderText_Solid(font, buffer, color);
-	SDL_Texture *scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
-
-	SDL_Rect scorerect = {WINDOW_WIDTH/2 - scoreSurface->w / 2, 
-	WINDOW_HEIGHT/2 - scoreSurface->h / 2, scoreSurface->w, scoreSurface->h};
+	surface = TTF_RenderText_Solid(font, buffer, color);
+	scoreTexture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect scorerect = {WINDOW_WIDTH/2 - surface->w / 2,
+	WINDOW_HEIGHT/2 - surface->h / 2, surface->w, surface->h};
 
 	// assisting text.
-	SDL_Surface *spaceSurface = TTF_RenderText_Solid(font, "Press <Space> to play again", color);
-	SDL_Texture *spaceTexture = SDL_CreateTextureFromSurface(renderer, spaceSurface);
-
-	SDL_Rect spacerect = {WINDOW_WIDTH/2 - spaceSurface->w / 2, 
-		WINDOW_HEIGHT/2 + spaceSurface->h * 4, spaceSurface->w, spaceSurface->h};
-
+	surface = TTF_RenderText_Solid(font, "Press <Space> to play again", color);
+	spaceTexture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_Rect spacerect = {WINDOW_WIDTH/2 - surface->w / 2,
+		WINDOW_HEIGHT/2 + surface->h * 4, surface->w, surface->h};
 
 	char run = 1;
 	SDL_Event event;
